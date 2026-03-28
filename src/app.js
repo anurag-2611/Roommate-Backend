@@ -13,7 +13,7 @@ const app = express();
 
 app.use(
   cors({
-    origin: ["http://localhost:5173", "http://localhost:5000"],
+    origin: ["https://roommate-henna.vercel.app/", "https://roommate-backend.vercel.app"],
     credentials: true,
   }),
 );
