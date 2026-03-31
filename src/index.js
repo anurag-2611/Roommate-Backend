@@ -15,7 +15,7 @@ const server = http.createServer(app);
 // socket io setup
 export const io = new Server(server, {
   cors: {
-    origin: "http://localhost:5173",
+    origin: "https://roommate-frontend-69izgxcaq-anurag-choudharys-projects-c0129f03.vercel.app",
     credentials: true,
   },
 });
