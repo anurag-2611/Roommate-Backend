@@ -13,7 +13,7 @@ const app = express();
 
 app.use(
   cors({
-    origin: ["https://roommate-frontend-69izgxcaq-anurag-choudharys-projects-c0129f03.vercel.app", "https://roommate-backend-bh0y1q6g1-anurag-choudharys-projects-c0129f03.vercel.app/"],
+    origin: ["http://localhost:5173", "https://roommate-henna.vercel.app"],
     credentials: true,
   }),
 );
