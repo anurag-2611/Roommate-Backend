@@ -6,7 +6,9 @@ const VerifyJwt = async (req, res, next) => {
   try {
     const authHeader = req.header("Authorization");
 
-    const token =req.cookies?.accessToken || authHeader?.replace("Bearer ", "").trim();
+    const token =
+      req.cookies?.accessToken ||
+      authHeader?.replace("Bearer ", "").trim();
 
     if (!token) {
       return res.status(401).json({
@@ -24,7 +26,7 @@ const VerifyJwt = async (req, res, next) => {
     if (!user) {
       return res.status(401).json({
         success: false,
-        message: "Invalid Access Token",
+        message: "Invalid access token",
       });
     }
 
@@ -34,7 +36,7 @@ const VerifyJwt = async (req, res, next) => {
     console.log("VerifyJwt error:", error.message);
     return res.status(401).json({
       success: false,
-      message: error.message,
+      message: "Invalid or expired token",
     });
   }
 };
