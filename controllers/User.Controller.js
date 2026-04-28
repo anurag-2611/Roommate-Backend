@@ -103,10 +103,12 @@ const loginUser = async (req, res) => {
       "-password -refreshToken",
     );
 
-    const options = {
-      httpOnly: true,
-      secure: true,
-    };
+const options = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+  sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+  path: "/",
+};
 
     return res
       .status(200)
@@ -134,11 +136,12 @@ const logoutUser = async (req, res) => {
       $unset: { refreshToken: 1 },
     });
 
-    const options = {
-      httpOnly: true,
-      secure: true,
-      sameSite: "none",
-    };
+const options = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+  sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+  path: "/",
+};
 
     return res
       .status(200)
