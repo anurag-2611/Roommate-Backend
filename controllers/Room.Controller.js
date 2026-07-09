@@ -20,9 +20,14 @@ const addHome = async (req, res) => {
       rentalTerms,
     } = req.body;
 
-    const thumbnail = req.files?.thumbnail?.[0]?.path;
-    const photos = req.files?.photos?.[0]?.path;
-    const videos = req.files?.videos?.[0]?.path;
+    // Ensure authenticated user is present
+    if (!req.user || !req.user._id) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const thumbnailFile = req.files?.thumbnail?.[0];
+    const photosFiles = req.files?.photos || [];
+    const videosFiles = req.files?.videos || [];
 
     if (
       !title ||
@@ -43,12 +48,33 @@ const addHome = async (req, res) => {
         .json({ message: "All required fields are required" });
     }
 
-    const thumbnailURL = await uploadOnCloudinary(thumbnail);
-    const photoURL = photos ? await uploadOnCloudinary(photos) : null;
-    const videoURL = videos ? await uploadOnCloudinary(videos) : null;
+    // Upload thumbnail (required)
+    const thumbnailURL = thumbnailFile
+      ? await uploadOnCloudinary(thumbnailFile.path)
+      : null;
 
     if (!thumbnailURL) {
-      return res.status(400).json({ message: "Failed to upload thumbnail" });
+      return res
+        .status(400)
+        .json({ message: "Thumbnail is required or upload failed" });
+    }
+
+    // Upload photos (optional, allow multiple)
+    let photosURLs = [];
+    if (photosFiles.length > 0) {
+      const uploads = await Promise.all(
+        photosFiles.map((f) => uploadOnCloudinary(f.path)),
+      );
+      photosURLs = uploads.filter(Boolean).map((u) => u.url);
+    }
+
+    // Upload videos (optional, allow multiple)
+    let videosURLs = [];
+    if (videosFiles.length > 0) {
+      const uploads = await Promise.all(
+        videosFiles.map((f) => uploadOnCloudinary(f.path)),
+      );
+      videosURLs = uploads.filter(Boolean).map((u) => u.url);
     }
 
     const newRoom = await Room.create({
@@ -65,8 +91,8 @@ const addHome = async (req, res) => {
       email,
       rentalTerms,
       thumbnail: thumbnailURL.url,
-      photos: photoURL ? [photoURL.url] : [],
-      videos: videoURL ? [videoURL.url] : [],
+      photos: photosURLs,
+      videos: videosURLs,
     });
 
     await User.findByIdAndUpdate(
