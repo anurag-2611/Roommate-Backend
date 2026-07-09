@@ -1,5 +1,6 @@
 import { uploadOnCloudinary } from "../utils/Cloudinary.js";
 import { Room } from "../models/room.model.js";
+import { User } from "../models/user.model.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 
 const addHome = async (req, res) => {
@@ -37,7 +38,9 @@ const addHome = async (req, res) => {
       !email ||
       !thumbnail
     ) {
-      return res.status(400).json({ message: "All required fields are required" });
+      return res
+        .status(400)
+        .json({ message: "All required fields are required" });
     }
 
     const thumbnailURL = await uploadOnCloudinary(thumbnail);
@@ -71,7 +74,7 @@ const addHome = async (req, res) => {
       {
         $push: { listing: newRoom._id },
       },
-      { new: true }
+      { new: true },
     );
 
     return res
@@ -95,19 +98,17 @@ const GetRoom = async (req, res) => {
   }
 };
 
-const GetRoomById = async (req , res) => {
-   try {
+const GetRoomById = async (req, res) => {
+  try {
     const room = await Room.findById(req.params.id);
 
     return res
-       .status(200)
-       .json(new ApiResponse(200, room, "Rooms detailed fatched"));
-       
-   } catch (error) {
-     console.error("Error fetching room:", error);
-     res.status(500).json({ message: "Failed to fetch room" });
-   }
-   
-}
+      .status(200)
+      .json(new ApiResponse(200, room, "Rooms detailed fatched"));
+  } catch (error) {
+    console.error("Error fetching room:", error);
+    res.status(500).json({ message: "Failed to fetch room" });
+  }
+};
 
-export { addHome , GetRoom ,GetRoomById };
+export { addHome, GetRoom, GetRoomById };
