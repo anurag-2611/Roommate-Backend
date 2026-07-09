@@ -103,12 +103,12 @@ const loginUser = async (req, res) => {
       "-password -refreshToken",
     );
 
-const options = {
-  httpOnly: true,
-  secure: process.env.NODE_ENV === "production",
-  sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-  path: "/",
-};
+    const options = {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      path: "/",
+    };
 
     return res
       .status(200)
@@ -136,12 +136,12 @@ const logoutUser = async (req, res) => {
       $unset: { refreshToken: 1 },
     });
 
-const options = {
-  httpOnly: true,
-  secure: process.env.NODE_ENV === "production",
-  sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-  path: "/",
-};
+    const options = {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      path: "/",
+    };
 
     return res
       .status(200)
@@ -165,6 +165,19 @@ const getCurrentUser = async (req, res) => {
 
 const userProfile = async (req, res) => {
   try {
+    // Debug: log incoming payload and files to aid troubleshooting
+    console.log("[userProfile] incoming body:", {
+      body: req.body,
+      files: Object.keys(req.files || {}).reduce((acc, key) => {
+        acc[key] = (req.files[key] || []).map((f) => ({
+          originalname: f.originalname,
+          path: f.path,
+          size: f.size,
+        }));
+        return acc;
+      }, {}),
+    });
+
     const { userName, fullName, city, bio } = req.body;
     const userId = req.user?._id;
 
@@ -181,6 +194,13 @@ const userProfile = async (req, res) => {
     const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json(new ApiResponse(404, null, "User not found"));
+    }
+
+    // If user already has a profile, prevent duplicate creation
+    if (user.userProfile) {
+      return res
+        .status(409)
+        .json(new ApiResponse(409, null, "User profile already exists"));
     }
 
     const existingUserName = await UserProfile.findOne({ userName });
@@ -206,14 +226,31 @@ const userProfile = async (req, res) => {
         .json(new ApiResponse(500, null, "Upload avatar image failed"));
     }
 
-    const newUserProfile = await UserProfile.create({
-      user :userId,
-      userName,
-      fullName,
-      city,
-      bio,
-      avatar: avatarURL.url,
-    });
+    let newUserProfile;
+    try {
+      newUserProfile = await UserProfile.create({
+        user: userId,
+        userName,
+        fullName,
+        city,
+        bio,
+        avatar: avatarURL.url,
+      });
+    } catch (createErr) {
+      // handle duplicate key (unique) errors clearly
+      if (createErr && createErr.code === 11000) {
+        return res
+          .status(409)
+          .json(
+            new ApiResponse(409, null, "Username or profile already exists"),
+          );
+      }
+
+      console.error("Error creating UserProfile:", createErr);
+      return res
+        .status(500)
+        .json(new ApiResponse(500, null, "Failed to create user profile"));
+    }
 
     await User.findByIdAndUpdate(
       req.user._id,
