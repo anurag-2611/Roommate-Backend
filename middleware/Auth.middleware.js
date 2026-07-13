@@ -1,4 +1,3 @@
-
 import jwt from "jsonwebtoken";
 import { User } from "../models/user.model.js";
 
@@ -7,8 +6,7 @@ const VerifyJwt = async (req, res, next) => {
     const authHeader = req.header("Authorization");
 
     const token =
-      req.cookies?.accessToken ||
-      authHeader?.replace("Bearer ", "").trim();
+      req.cookies?.accessToken || authHeader?.replace("Bearer ", "").trim();
 
     if (!token) {
       return res.status(401).json({
@@ -20,7 +18,7 @@ const VerifyJwt = async (req, res, next) => {
     const decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
 
     const user = await User.findById(decodedToken._id).select(
-      "-password -refreshToken"
+      "-password -refreshToken",
     );
 
     if (!user) {
@@ -33,7 +31,6 @@ const VerifyJwt = async (req, res, next) => {
     req.user = user;
     next();
   } catch (error) {
-    console.log("VerifyJwt error:", error.message);
     return res.status(401).json({
       success: false,
       message: "Invalid or expired token",

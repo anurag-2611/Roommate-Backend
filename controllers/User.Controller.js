@@ -63,7 +63,6 @@ const registerUser = async (req, res) => {
       .status(201)
       .json(new ApiResponse(200, newUser, "User registered Successfully"));
   } catch (error) {
-    console.log(error.stack);
     throw new ApiError(500, "An error occurred while registering the user.");
   }
 };
@@ -165,19 +164,6 @@ const getCurrentUser = async (req, res) => {
 
 const userProfile = async (req, res) => {
   try {
-    // Debug: log incoming payload and files to aid troubleshooting
-    console.log("[userProfile] incoming body:", {
-      body: req.body,
-      files: Object.keys(req.files || {}).reduce((acc, key) => {
-        acc[key] = (req.files[key] || []).map((f) => ({
-          originalname: f.originalname,
-          path: f.path,
-          size: f.size,
-        }));
-        return acc;
-      }, {}),
-    });
-
     const { userName, fullName, city, bio } = req.body;
     const userId = req.user?._id;
 
@@ -272,7 +258,6 @@ const userProfile = async (req, res) => {
       ),
     );
   } catch (error) {
-    console.log("🔥 ERROR:", error);
     return res
       .status(500)
       .json(new ApiResponse(500, null, error.message || "Server error"));
@@ -305,7 +290,6 @@ const getUserProfile = async (req, res) => {
         ),
       );
   } catch (error) {
-    console.log("🔥 ERROR:", error);
     return res.status(500).json(new ApiResponse(500, null, "Server Error"));
   }
 };
@@ -318,7 +302,6 @@ const getUsers = async (req, res) => {
       .status(200)
       .json(new ApiResponse(200, users, "Users fetched successfully"));
   } catch (error) {
-    console.log("🔥 ERROR:", error);
     return res.status(500).json(new ApiResponse(500, null, "Server Error"));
   }
 };

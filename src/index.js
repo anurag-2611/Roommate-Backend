@@ -23,8 +23,6 @@ export const io = new Server(server, {
 const users = {};
 
 io.on("connection", (socket) => {
-  console.log("Connected:", socket.id);
-
   // join
   socket.on("join", (userId) => {
     users[userId] = socket.id;
@@ -52,12 +50,8 @@ io.on("connection", (socket) => {
 // db connect ke baad server start karo
 connectDB()
   .then(() => {
-    server.listen(PORT, () => {
-      console.log(`Server is running on http://localhost:${PORT}`);
-    });
+    server.listen(PORT, () => {});
   })
   .catch((error) => {
     console.error("Failed to start server:", error);
   });
-
-
