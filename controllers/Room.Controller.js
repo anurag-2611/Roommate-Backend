@@ -41,7 +41,7 @@ const addHome = async (req, res) => {
       !phoneNumber ||
       !rentalTerms ||
       !email ||
-      !thumbnail
+      !thumbnailFile
     ) {
       return res
         .status(400)
