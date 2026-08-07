@@ -128,6 +128,10 @@ const GetRoomById = async (req, res) => {
   try {
     const room = await Room.findById(req.params.id);
 
+    if (!room) {
+      return res.status(404).json(new ApiResponse(404, null, "Room not found"));
+    }
+
     return res
       .status(200)
       .json(new ApiResponse(200, room, "Rooms detailed fatched"));

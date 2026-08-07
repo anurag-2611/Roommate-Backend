@@ -21,15 +21,27 @@ const sendFriendRequest = async (req, res) => {
     }
 
     // for checking in array
-    if (senderProfile.friends.includes(receiverProfile._id)) {
+    if (
+      senderProfile.friends.some(
+        (id) => id.toString() === receiverProfile._id.toString(),
+      )
+    ) {
       return res.status(400).json({ message: "Already friends" });
     }
 
-    if (senderProfile.friendRequestsSent.includes(receiverProfile._id)) {
+    if (
+      senderProfile.friendRequestsSent.some(
+        (id) => id.toString() === receiverProfile._id.toString(),
+      )
+    ) {
       return res.status(400).json({ message: "Friend request already sent" });
     }
 
-    if (senderProfile.friendRequestsReceived.includes(receiverProfile._id)) {
+    if (
+      senderProfile.friendRequestsReceived.some(
+        (id) => id.toString() === receiverProfile._id.toString(),
+      )
+    ) {
       return res.status(400).json({ message: "This user already sent you a request" });
     }
 
@@ -81,11 +93,19 @@ const acceptFriendRequest = async (req, res) => {
       (id) => id.toString() !== currentProfile._id.toString()
     );
 
-    if (!currentProfile.friends.includes(senderProfile._id)) {
+    if (
+      !currentProfile.friends.some(
+        (id) => id.toString() === senderProfile._id.toString(),
+      )
+    ) {
       currentProfile.friends.push(senderProfile._id);
     }
 
-    if (!senderProfile.friends.includes(currentProfile._id)) {
+    if (
+      !senderProfile.friends.some(
+        (id) => id.toString() === currentProfile._id.toString(),
+      )
+    ) {
       senderProfile.friends.push(currentProfile._id);
     }
 

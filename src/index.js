@@ -9,13 +9,18 @@ dotenv.config({
 });
 
 const PORT = process.env.PORT || 5000;
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://roommate-henna.vercel.app",
+  process.env.CLIENT_URL,
+].filter(Boolean);
 
 const server = http.createServer(app);
 
 // socket io setup
 export const io = new Server(server, {
   cors: {
-    origin: "https://roommate-henna.vercel.app",
+    origin: allowedOrigins,
     credentials: true,
   },
 });

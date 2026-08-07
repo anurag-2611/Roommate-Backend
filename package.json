@@ -5,10 +5,11 @@
   "license": "ISC",
   "type": "module",
   "author": "Anurag choudhary",
-  "main": "index.js",
+  "main": "src/index.js",
   "scripts": {
     "dev": "nodemon src/index.js",
-    "start": "node src/index.js"
+    "start": "node src/index.js",
+    "check": "node --check src/index.js && node --check src/app.js && node --check controllers/User.Controller.js && node --check controllers/Room.Controller.js && node --check controllers/UserProfile.controller.js && node --check controllers/message.controller.js"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",

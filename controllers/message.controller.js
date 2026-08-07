@@ -1,14 +1,42 @@
 import { Message } from "../models/message.model.js";
+import { UserProfile } from "../models/userProfile.model.js";
+
+const getFriendUserId = async (currentUserId, friendProfileId) => {
+  const currentProfile = await UserProfile.findOne({ user: currentUserId });
+
+  if (
+    !currentProfile ||
+    !currentProfile.friends.some(
+      (id) => id.toString() === friendProfileId.toString(),
+    )
+  ) {
+    return null;
+  }
+
+  const friendProfile = await UserProfile.findById(friendProfileId).select(
+    "user",
+  );
+
+  return friendProfile?.user || null;
+};
 
 const getMessages = async (req, res) => {
   try {
     const myId = req.user._id;
     const { friendId } = req.params;
+    const friendUserId = await getFriendUserId(myId, friendId);
+
+    if (!friendUserId) {
+      return res.status(404).json({
+        success: false,
+        message: "Friend not found",
+      });
+    }
 
     const messages = await Message.find({
       $or: [
-        { senderId: myId, receiverId: friendId },
-        { senderId: friendId, receiverId: myId },
+        { senderId: myId, receiverId: friendUserId },
+        { senderId: friendUserId, receiverId: myId },
       ],
     }).sort({ createdAt: 1 });
 
@@ -36,10 +64,19 @@ const sendMessage = async (req, res) => {
       });
     }
 
+    const receiverUserId = await getFriendUserId(senderId, receiverId);
+
+    if (!receiverUserId) {
+      return res.status(404).json({
+        success: false,
+        message: "Friend not found",
+      });
+    }
+
     const newMessage = await Message.create({
       senderId,
-      receiverId,
-      text,
+      receiverId: receiverUserId,
+      text: text.trim(),
     });
 
     res.status(201).json({

@@ -7,6 +7,7 @@ import { VerifyJwt } from "../middleware/Auth.middleware.js";
 const RoomRouter = Router();
 
 RoomRouter.route("/add-room").post(
+  VerifyJwt,
   upload.fields([
     {
       name: "thumbnail",
@@ -21,7 +22,6 @@ RoomRouter.route("/add-room").post(
       maxCount: 4,
     },
   ]),
-  VerifyJwt,
   addHome,
 );
 RoomRouter.route("/get-rooms").get(GetRoom);

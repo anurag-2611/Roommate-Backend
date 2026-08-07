@@ -1,5 +1,6 @@
 import { User } from "../models/user.model.js";
 import { UserProfile } from "../models/userProfile.model.js";
+import { Room } from "../models/room.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { uploadOnCloudinary } from "../utils/Cloudinary.js";
@@ -35,7 +36,7 @@ const registerUser = async (req, res) => {
     /// check if all required fields are provided
     if (!firstName || !email || !password) {
       return res
-        .status(201)
+        .status(400)
         .json(
           new ApiResponse(
             400,
@@ -51,8 +52,8 @@ const registerUser = async (req, res) => {
 
     if (existedUser) {
       return res
-        .status(201)
-        .json(new ApiResponse(400, null, "Already registered"));
+        .status(409)
+        .json(new ApiResponse(409, null, "Already registered"));
     }
 
     // create a new user
@@ -61,7 +62,18 @@ const registerUser = async (req, res) => {
 
     return res
       .status(201)
-      .json(new ApiResponse(200, newUser, "User registered Successfully"));
+      .json(
+        new ApiResponse(
+          201,
+          {
+            _id: newUser._id,
+            firstName: newUser.firstName,
+            lastName: newUser.lastName,
+            email: newUser.email,
+          },
+          "User registered successfully",
+        ),
+      );
   } catch (error) {
     throw new ApiError(500, "An error occurred while registering the user.");
   }
@@ -311,13 +323,24 @@ const Addfavorites = async (req, res) => {
     const userId = req.user.id; // from auth
     const { roomId } = req.params;
 
-    const user = await User.findById(userId);
+    const [user, room] = await Promise.all([
+      User.findById(userId),
+      Room.findById(roomId),
+    ]);
 
-    if (!user.favorites.includes(roomId)) {
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    if (!room) {
+      return res.status(404).json({ message: "Room not found" });
+    }
+
+    if (!user.favorites.some((favorite) => favorite.toString() === roomId)) {
       user.favorites.push(roomId);
       await user.save();
     }
-    res.status(200).json({ message: "Added to favorites" });
+    res.status(200).json(new ApiResponse(200, room, "Added to favorites"));
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -329,6 +352,10 @@ const Removefavorites = async (req, res) => {
     const { roomId } = req.params;
 
     const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
 
     user.favorites = user.favorites.filter((fav) => fav.toString() !== roomId);
 
