@@ -10,11 +10,6 @@ dotenv.config({
 
 const PORT = process.env.PORT || 5000;
 
-if (!process.env.MONGO_URL) {
-  console.error("Startup failed: MONGO_URL environment variable is not configured.");
-  process.exit(1);
-}
-
 const allowedOrigins = [
   "http://localhost:5173",
   "https://roommate-henna.vercel.app",
@@ -58,14 +53,12 @@ io.on("connection", (socket) => {
   });
 });
 
-// db connect ke baad server start karo
-connectDB()
-  .then(() => {
-    server.listen(PORT, "0.0.0.0", () => {
-      console.log(`RoomMate API is listening on port ${PORT}`);
-    });
-  })
-  .catch((error) => {
-    console.error("Failed to start server:", error);
-    process.exit(1);
+// Start listening immediately. Database access is checked by the API middleware,
+// so a MongoDB outage does not make the web service fail its port check.
+server.listen(PORT, "0.0.0.0", () => {
+  console.log(`RoomMate API is listening on port ${PORT}`);
+
+  connectDB().catch((error) => {
+    console.error("MongoDB is unavailable at startup:", error.message);
   });
+});

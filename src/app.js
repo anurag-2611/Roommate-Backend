@@ -2,7 +2,7 @@ import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
-import connectDB from "../db/db_connect.js";
+import connectDB, { isDatabaseConnected } from "../db/db_connect.js";
 
 // methods
 import { Cityrouter } from "../routes/City.router.js";
@@ -35,20 +35,25 @@ app.use(express.static("public"));
 app.use(cookieParser());
 
 app.get("/health", async (req, res) => {
-  try {
-    await connectDB();
+  if (isDatabaseConnected()) {
     res.status(200).json({ success: true, message: "RoomMate API is healthy" });
-  } catch {
-    res.status(503).json({
-      success: false,
-      message: "Database connection is unavailable",
-    });
+    return;
   }
+
+  res.status(503).json({
+    success: false,
+    message: "API is running, but MongoDB is unavailable",
+  });
 });
 
 app.use(async (req, res, next) => {
   try {
-    await connectDB();
+    await Promise.race([
+      connectDB(),
+      new Promise((_, reject) => {
+        setTimeout(() => reject(new Error("Database connection timed out")), 5000);
+      }),
+    ]);
     next();
   } catch {
     res.status(503).json({

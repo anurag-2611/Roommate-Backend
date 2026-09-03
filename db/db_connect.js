@@ -2,8 +2,10 @@ import mongoose from "mongoose";
 
 let connectionPromise = null;
 
+const isDatabaseConnected = () => mongoose.connection.readyState === 1;
+
 const connectDB = async () => {
-  if (mongoose.connection.readyState === 1) {
+  if (isDatabaseConnected()) {
     return mongoose.connection;
   }
 
@@ -29,3 +31,4 @@ const connectDB = async () => {
 };
 
 export default connectDB;
+export { isDatabaseConnected };
