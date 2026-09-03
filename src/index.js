@@ -9,6 +9,12 @@ dotenv.config({
 });
 
 const PORT = process.env.PORT || 5000;
+
+if (!process.env.MONGO_URL) {
+  console.error("Startup failed: MONGO_URL environment variable is not configured.");
+  process.exit(1);
+}
+
 const allowedOrigins = [
   "http://localhost:5173",
   "https://roommate-henna.vercel.app",
@@ -55,8 +61,11 @@ io.on("connection", (socket) => {
 // db connect ke baad server start karo
 connectDB()
   .then(() => {
-    server.listen(PORT, () => {});
+    server.listen(PORT, "0.0.0.0", () => {
+      console.log(`RoomMate API is listening on port ${PORT}`);
+    });
   })
   .catch((error) => {
     console.error("Failed to start server:", error);
+    process.exit(1);
   });

@@ -33,6 +33,19 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static("public"));
 app.use(cookieParser());
+
+app.get("/health", async (req, res) => {
+  try {
+    await connectDB();
+    res.status(200).json({ success: true, message: "RoomMate API is healthy" });
+  } catch {
+    res.status(503).json({
+      success: false,
+      message: "Database connection is unavailable",
+    });
+  }
+});
+
 app.use(async (req, res, next) => {
   try {
     await connectDB();

@@ -6,6 +6,9 @@
   "type": "module",
   "author": "Anurag choudhary",
   "main": "src/index.js",
+  "engines": {
+    "node": ">=20.0.0"
+  },
   "scripts": {
     "dev": "nodemon src/index.js",
     "start": "node src/index.js",
